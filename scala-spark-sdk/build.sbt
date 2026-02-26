@@ -33,7 +33,7 @@ val sparkVersionToHadoopVersionMap = Map(
 
 Compile / unmanagedSourceDirectories += {
   val baseDir = baseDirectory.value
-  if (majorSparkVersion == "3.5") {
+  if (majorSparkVersion.toDouble >= "3.5") {
     baseDir / "src" / "main" / "scala-spark-3.5"
   } else {
     baseDir / "src" / "main" / "scala-spark-3.2-3.4"

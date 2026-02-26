@@ -9,6 +9,6 @@ object SparkRowEncoderAdaptor extends SparkRowEncoderAdaptorLike {
     // For Spark 3.5+, RowEncoder.encoderFor(schema) is the API and returns an AgnosticEncoder or ExpressionEncoder depending on usage.
     // Fortunately casting to ExpressionEncoder[Row] or the implicit conversion is typically compatible, 
     // but the underlying method is `.encoderFor()`. To be safe, we just use RowEncoder.encoderFor
-    RowEncoder.encoderFor(schema).asInstanceOf[ExpressionEncoder[Row]]
+    ExpressionEncoder(RowEncoder.encoderFor(schema))
   }
 }

@@ -44,14 +44,12 @@ def classpath_jars():
     
     if target_jar not in bundled_jars:
         raise RuntimeError(
-        f"No JAR found for Spark {major_minor}. "
-        f"Available: {bundled_jars}. "
-        f"Supported Spark versions: 3.2, 3.3, 3.4, 3.5"
-    )
+            f"No JAR found for Spark {major_minor}. "
+            f"Available: {bundled_jars}. "
+            f"Supported Spark versions: 3.2, 3.3, 3.4, 3.5"
+        )
             
-    jars = []
-    if target_jar:
-        jars.append(pkg_resources.resource_filename(pkg_dir, jars_dir + target_jar))
+    jars = [pkg_resources.resource_filename(pkg_dir, jars_dir + target_jar)]
 
     return jars
 

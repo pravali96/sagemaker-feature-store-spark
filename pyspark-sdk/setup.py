@@ -14,7 +14,7 @@ VERSION_PATH = "VERSION"
 JARS_TARGET = os.path.join(TEMP_PATH, "jars")
 SCALA_SPARK_DIR = Path("../scala-spark-sdk")
 UBER_JAR_NAME_PREFIX = "sagemaker-feature-store-spark-sdk"
-SUPPORTED_SPARK_VERSIONS = ["3.2.4", "3.3.4", "3.4.3", "3.5.1", "3.5.8"]
+SUPPORTED_SPARK_VERSIONS = ["3.2", "3.3", "3.4", "3.5"]
 
 in_spark_sdk = os.path.isfile(SCALA_SPARK_DIR / "build.sbt")
 this_directory = Path(__file__).parent
@@ -108,7 +108,7 @@ if in_spark_sdk:
     shutil.copyfile(os.path.join("..", VERSION_PATH), VERSION_PATH)
 
     if not os.path.exists(JARS_TARGET):
-        os.mkdir(JARS_TARGET)
+        os.makedirs(JARS_TARGET, exist_ok=True)
 
     spark_build_versions = {
         '3.2': '3.2.4',
