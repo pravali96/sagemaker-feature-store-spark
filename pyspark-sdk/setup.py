@@ -36,14 +36,14 @@ class CustomInstall(install):
         install.run(self)
         spark_home_dir = os.environ.get('SPARK_HOME', None)
         if spark_home_dir:
-            uber_jar_target = Path(spark_home_dir) / "jars" / UBER_JAR_NAME
+            uber_jar_target_dir = Path(spark_home_dir) / "jars"
 
             jars_in_deps = os.listdir(Path(os.getcwd()) / Path(JARS_TARGET))
-            uber_jar_name = [jar for jar in jars_in_deps if jar.startswith(UBER_JAR_NAME_PREFIX)].pop()
-            uber_jar_dir = Path(os.getcwd()) / Path(JARS_TARGET) / uber_jar_name
-
-            print(f"Copying feature store uber jar to {uber_jar_target}")
-            shutil.copy(uber_jar_dir, uber_jar_target)
+            uber_jar_names = [jar for jar in jars_in_deps if jar.startswith(UBER_JAR_NAME_PREFIX)]
+            for uber_jar_name in uber_jar_names:
+                uber_jar_dir = Path(os.getcwd()) / Path(JARS_TARGET) / uber_jar_name
+                print(f"Copying feature store uber jar {uber_jar_name} to {uber_jar_target_dir}")
+                shutil.copy(uber_jar_dir, uber_jar_target_dir / uber_jar_name)
 
         else:
             print("Environment variable SPARK_HOME is not set, dependent jars are not installed to SPARK_HOME.")
@@ -54,35 +54,40 @@ print("Starting the installation of SageMaker FeatureStore pyspark...")
 if in_spark_sdk:
     shutil.copyfile(os.path.join("..", VERSION_PATH), VERSION_PATH)
 
-    if not os.path.exists(TEMP_PATH):
-        os.mkdir(TEMP_PATH)
-
-    # use sbt to package the scala uber jar
-    p = subprocess.Popen("sbt assembly".split(),
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE,
-                         cwd=SCALA_SPARK_DIR)
-    p.communicate()
-
-    # retrieve all jars under 'assembly-output'
-    classpath = []
-    assembly_output_dir = SCALA_SPARK_DIR / "assembly-output"
-    assembly_output_files = os.listdir(assembly_output_dir)
-    for output_file in assembly_output_files:
-        file_path = assembly_output_dir / output_file
-        if output_file.endswith(".jar") and os.path.exists(file_path):
-            classpath.append(file_path)
-
-    if len(classpath) == 0:
-        print("Failed to retrieve the jar classpath. Can't package")
-        exit(-1)
-
     if not os.path.exists(JARS_TARGET):
         os.mkdir(JARS_TARGET)
 
-    uber_jar_path = [jar for jar in classpath if os.path.basename(jar).startswith(UBER_JAR_NAME_PREFIX)].pop()
-    target_path = os.path.join(JARS_TARGET, UBER_JAR_NAME)
-    shutil.copy(uber_jar_path, target_path)
+    supported_spark_versions = ["3.2.4", "3.3.4", "3.4.3", "3.5.1"]
+    for sv in supported_spark_versions:
+        # use sbt to package the scala uber jar
+        p = subprocess.Popen(["sbt", f'-DSPARK_VERSION={sv}', "assembly"],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             cwd=SCALA_SPARK_DIR)
+        p.communicate()
+
+        # retrieve all jars under 'assembly-output'
+        classpath = []
+        assembly_output_dir = SCALA_SPARK_DIR / "assembly-output"
+        assembly_output_files = os.listdir(assembly_output_dir)
+        for output_file in assembly_output_files:
+            file_path = assembly_output_dir / output_file
+            if output_file.endswith(".jar") and os.path.exists(file_path):
+                classpath.append(file_path)
+
+        if len(classpath) == 0:
+            print(f"Failed to retrieve the jar classpath. Can't package {sv}")
+            exit(-1)
+        
+        # Ensure we get the latest assembled jar
+        classpath.sort(key=os.path.getmtime)
+        uber_jar_path = classpath[-1]
+
+        sv_parts = sv.split(".")
+        major_minor = f"{sv_parts[0]}.{sv_parts[1]}"
+        target_jar_name = f"{UBER_JAR_NAME_PREFIX}-{major_minor}.jar"
+        target_path = os.path.join(JARS_TARGET, target_jar_name)
+        shutil.copy(uber_jar_path, target_path)
 
 else:
     if not os.path.exists(JARS_TARGET):

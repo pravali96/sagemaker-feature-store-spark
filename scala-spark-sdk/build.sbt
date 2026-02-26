@@ -25,11 +25,20 @@ val majorSparkVersion = sparkVersion.substring(0, sparkVersion.lastIndexOf("."))
 
 val awsSDKVersion = "2.18.32"
 val sparkVersionToHadoopVersionMap = Map(
-  "3.0" -> "3.2.4",
-  "3.1" -> "3.2.4",
   "3.2" -> "3.2.4",
   "3.3" -> "3.2.4",
+  "3.4" -> "3.3.4",
+  "3.5" -> "3.3.6"
 )
+
+Compile / unmanagedSourceDirectories += {
+  val baseDir = baseDirectory.value
+  if (majorSparkVersion == "3.5") {
+    baseDir / "src" / "main" / "scala-spark-3.5"
+  } else {
+    baseDir / "src" / "main" / "scala-spark-3.2"
+  }
+}
 
 // read the version number
 version := {

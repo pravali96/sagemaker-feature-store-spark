@@ -27,8 +27,27 @@ def classpath_jars():
     jars_dir = "/jars/"
     os.environ['PYTHON_EGG_CACHE'] = pkg_dir + '/tmp'
 
+    import pyspark
+    
     bundled_jars = pkg_resources.resource_listdir(pkg_dir, jars_dir)
-    jars = [pkg_resources.resource_filename(pkg_dir, jars_dir + jar) for jar in bundled_jars]
+    
+    # Check current pyspark version and filter jars
+    spark_version = pyspark.__version__
+    sv_parts = spark_version.split(".")
+    major_minor = f"{sv_parts[0]}.{sv_parts[1]}"
+    target_jar = f"sagemaker-feature-store-spark-sdk-{major_minor}.jar"
+    
+    if target_jar not in bundled_jars:
+        import fnmatch
+        jar_matches = fnmatch.filter(bundled_jars, "sagemaker-feature-store-spark-sdk-3.*.jar")
+        if jar_matches:
+            target_jar = sorted(jar_matches)[-1]
+        else:
+            target_jar = bundled_jars[0] if bundled_jars else None
+            
+    jars = []
+    if target_jar:
+        jars.append(pkg_resources.resource_filename(pkg_dir, jars_dir + target_jar))
 
     return jars
 
