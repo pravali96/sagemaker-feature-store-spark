@@ -62,6 +62,8 @@ jobs:
         env:
           PYSPARK_VERSION: ${{ matrix.pyspark-version }}
         run: |
+          # Derive major.minor so setup.py builds only this cell's JAR
+          export SPARK_BUILD_VERSION=$(echo "${{ matrix.pyspark-version }}" | cut -d. -f1,2)
           cd pyspark-sdk
           python setup.py sdist
           tox
