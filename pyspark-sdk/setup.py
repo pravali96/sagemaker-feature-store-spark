@@ -15,10 +15,11 @@ VERSION_PATH = "VERSION"
 JARS_TARGET = os.path.join(TEMP_PATH, "jars")
 SCALA_SPARK_DIR = Path("../scala-spark-sdk")
 UBER_JAR_NAME_PREFIX = "sagemaker-feature-store-spark-sdk"
-SUPPORTED_SPARK_VERSIONS = ["3.2", "3.3", "3.4", "3.5"]
+SUPPORTED_SPARK_VERSIONS = ["3.1", "3.2", "3.3", "3.4", "3.5"]
 
 # ── Centralised version map — single source of truth for all paths ──
 SPARK_BUILD_VERSIONS = {
+    "3.1": "3.1.3",
     "3.2": "3.2.4",
     "3.3": "3.3.4",
     "3.4": "3.4.3",
