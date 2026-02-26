@@ -33,7 +33,7 @@ val sparkVersionToHadoopVersionMap = Map(
 
 Compile / unmanagedSourceDirectories += {
   val baseDir = baseDirectory.value
-  if (majorSparkVersion.toDouble >= "3.5") {
+  if (majorSparkVersion.toDouble >= 3.5) {
     baseDir / "src" / "main" / "scala-spark-3.5"
   } else {
     baseDir / "src" / "main" / "scala-spark-3.2-3.4"
@@ -44,6 +44,13 @@ Compile / unmanagedSourceDirectories += {
 version := {
   val base = (SageMakerFeatureStoreSpark / baseDirectory).value
   IO.read(base / ".." / "VERSION").trim
+}
+
+val icebergVersion = majorSparkVersion match {
+  case "3.2" | "3.3" => "0.14.1"
+  case "3.4"         => "1.3.1"
+  case "3.5"         => "1.4.3"
+  case _             => "1.4.3"
 }
 
 scalaVersion := "2.12.8"
@@ -61,7 +68,7 @@ libraryDependencies ++= Seq(
   "software.amazon.awssdk" % "sts" % awsSDKVersion,
   "software.amazon.awssdk" % "url-connection-client" % awsSDKVersion,
 
-  "org.apache.iceberg" %% s"iceberg-spark-runtime-$majorSparkVersion" % "0.14.+",
+  "org.apache.iceberg" %% s"iceberg-spark-runtime-$majorSparkVersion" % icebergVersion,
 
   // Provided dependencies
   // hadoop-common and hadoop-aws should be provided by either platform or user. On EMR, sagemaker processing these are

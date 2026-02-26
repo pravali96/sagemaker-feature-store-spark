@@ -6,9 +6,9 @@ import org.apache.spark.sql.types.StructType
 
 object SparkRowEncoderAdaptor extends SparkRowEncoderAdaptorLike {
   override def encoderFor(schema: StructType): ExpressionEncoder[Row] = {
-    // For Spark 3.5+, RowEncoder.encoderFor(schema) is the API and returns an AgnosticEncoder or ExpressionEncoder depending on usage.
-    // Fortunately casting to ExpressionEncoder[Row] or the implicit conversion is typically compatible, 
-    // but the underlying method is `.encoderFor()`. To be safe, we just use RowEncoder.encoderFor
+    // Spark 3.5+ changed RowEncoder.encoderFor() to return AgnosticEncoder[Row]
+    // instead of ExpressionEncoder[Row]. Wrapping with ExpressionEncoder(...)
+    // bridges the new encoder back to the type that Dataset.flatMap expects.
     ExpressionEncoder(RowEncoder.encoderFor(schema))
   }
 }
