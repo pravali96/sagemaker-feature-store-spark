@@ -20,7 +20,7 @@ lazy val SageMakerFeatureStoreSpark = (project in file(".")).settings(
   assembly / assemblyOutputPath := file(s"./assembly-output/${(assembly/assemblyJarName).value}")
 )
 
-val sparkVersion = System.getProperty("SPARK_VERSION", "3.1.2")
+val sparkVersion = System.getProperty("SPARK_VERSION", "3.3.4")
 val majorSparkVersion = sparkVersion.substring(0, sparkVersion.lastIndexOf("."))
 
 val awsSDKVersion = "2.18.32"
@@ -36,7 +36,7 @@ Compile / unmanagedSourceDirectories += {
   if (majorSparkVersion == "3.5") {
     baseDir / "src" / "main" / "scala-spark-3.5"
   } else {
-    baseDir / "src" / "main" / "scala-spark-3.2"
+    baseDir / "src" / "main" / "scala-spark-3.2-3.4"
   }
 }
 

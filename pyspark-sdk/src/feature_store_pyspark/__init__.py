@@ -21,13 +21,18 @@ def classpath_jars():
     """
     import pkg_resources
     import os
+    
+    try:
+        import pyspark
+    except ImportError:
+        raise ImportError(
+            "PySpark is required. Install it with: pip install pyspark"
+        )
 
     pkg_dir = __name__
 
     jars_dir = "/jars/"
     os.environ['PYTHON_EGG_CACHE'] = pkg_dir + '/tmp'
-
-    import pyspark
     
     bundled_jars = pkg_resources.resource_listdir(pkg_dir, jars_dir)
     
@@ -38,12 +43,11 @@ def classpath_jars():
     target_jar = f"sagemaker-feature-store-spark-sdk-{major_minor}.jar"
     
     if target_jar not in bundled_jars:
-        import fnmatch
-        jar_matches = fnmatch.filter(bundled_jars, "sagemaker-feature-store-spark-sdk-3.*.jar")
-        if jar_matches:
-            target_jar = sorted(jar_matches)[-1]
-        else:
-            target_jar = bundled_jars[0] if bundled_jars else None
+        raise RuntimeError(
+        f"No JAR found for Spark {major_minor}. "
+        f"Available: {bundled_jars}. "
+        f"Supported Spark versions: 3.2, 3.3, 3.4, 3.5"
+    )
             
     jars = []
     if target_jar:
